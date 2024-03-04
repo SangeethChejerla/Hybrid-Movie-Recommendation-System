@@ -1,0 +1,67 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movies</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+
+<div class="container mx-auto p-4">
+    <h1 class="text-3xl font-bold mb-4">Choose a Genre</h1>
+    <form id="genreForm">
+        <div class="flex items-center mb-4">
+            <label for="genre" class="mr-2">Select Genre:</label>
+            <select id="genre" name="genre" class="p-2 border border-gray-300 rounded">
+                <option value="Action">Action</option>
+                <option value="Comedy">Comedy</option>
+                <option value="Horror">Horror</option>
+                <option value="Romance">Romance</option>
+            </select>
+        </div>
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Submit</button>
+    </form>
+
+    <div id="moviesContainer" class="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
+</div>
+
+<script>
+    document.getElementById('genreForm').addEventListener('submit', async function (event) {
+        event.preventDefault();
+
+        const genre = document.getElementById('genre').value;
+
+        const response = await fetch('/movies', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                genre: genre
+            })
+        });
+
+        const data = await response.json();
+
+        const moviesContainer = document.getElementById('moviesContainer');
+        moviesContainer.innerHTML = '';
+
+        data.movies.forEach(movie => {
+            const movieCard = `
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <img src="${movie.poster_path}" alt="${movie.title}" class="w-full h-56 object-cover">
+                    <div class="p-4">
+                        <h2 class="text-xl font-semibold">${movie.title}</h2>
+                        <p class="text-gray-700">${movie.description}</p>
+                    </div>
+                </div>
+            `;
+            moviesContainer.innerHTML += movieCard;
+        });
+    });
+</script>
+
+</body>
+</html>
