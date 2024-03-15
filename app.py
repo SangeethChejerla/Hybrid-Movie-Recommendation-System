@@ -307,7 +307,6 @@ indices_map = id_map.set_index("id")
 
 
 def hybrid(title, userId=123):
-    # Your existing hybrid function with modifications
     try:
         idx = indices[title]
         tmdbId = id_map.loc[title]["id"]
@@ -324,8 +323,8 @@ def hybrid(title, userId=123):
         )
         movies = movies.sort_values("est", ascending=False)
 
-        # Return only movie names
-        return list(movies.head(10)["title"])
+        # Return movie details along with names
+        return movies.head(12)
     except KeyError:
         raise IndexError("Movie not found. Please enter a valid movie title.")
 
@@ -411,12 +410,21 @@ def recommend():
     if request.method == "POST":
         movie_title = request.form["movie_title"]
         try:
-            movie_details = get_movie_details(movie_title)
-            recommendations = get_recommendations(movie_title)
+            # Use hybrid function to get recommendations
+            recommendations_data = hybrid(movie_title)
+            recommendations = []
+            for index, row in recommendations_data.iterrows():
+                recommendations.append(
+                    {
+                        "title": row["title"],
+                        "overview": get_movie_details(row["title"])["overview"],
+                        "poster_path": get_movie_details(row["title"])["poster_path"],
+                    }
+                )
 
             return render_template(
                 "index2.html",
-                movie_details=movie_details,
+                movie_details=get_movie_details(movie_title),
                 recommendations=recommendations,
             )
 
