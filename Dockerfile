@@ -14,8 +14,11 @@ COPY . /app
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Make port 5000 available to the world outside this container
-EXPOSE 5000
+# Download MovieLens dataset
+RUN mkdir data \
+    && wget -O data/ml-latest.zip http://files.grouplens.org/datasets/movielens/ml-latest.zip \
+    && unzip data/ml-latest.zip -d data/ \
+    && rm data/ml-latest.zip
 
 # Copy the templates directory into the container at /app/templates
 COPY templates /app/templates
@@ -23,5 +26,8 @@ COPY templates /app/templates
 # Define environment variable
 ENV FLASK_APP=app.py
 
-# Run the Flask application
+# Expose port 5000
+EXPOSE 5000
+
+# Command to run the Flask application
 CMD ["flask", "run", "--host=0.0.0.0"]
