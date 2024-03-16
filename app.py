@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request
 
-import pandas as pd
+
 import numpy as np
 from ast import literal_eval
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
@@ -11,7 +11,11 @@ from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.corpus import wordnet
 from surprise import Reader, Dataset, SVD
 from surprise.model_selection import cross_validate
+import warnings
+from pandas.errors import SettingWithCopyWarning
+import pandas as pd
 
+warnings.filterwarnings("ignore", category=SettingWithCopyWarning)
 app = Flask(__name__)
 
 credits = pd.read_csv("archive/credits.csv")
@@ -127,6 +131,11 @@ md = md.drop([19730, 29503, 35587])
 
 smd = md[md["id"].isin(links_small)]
 smd.loc[:, "tagline"] = smd["tagline"].fillna("")
+# Convert float values to strings using astype
+smd["overview"] = smd["overview"].astype(str)
+smd["tagline"] = smd["tagline"].astype(str)
+
+# Then concatenate the strings
 smd.loc[:, "description"] = smd["overview"] + smd["tagline"]
 smd.loc[:, "description"] = smd["description"].fillna("")
 
@@ -161,11 +170,12 @@ md = md.merge(credits, on="id")
 md = md.merge(keywords, on="id")
 smd = md[md["id"].isin(links_small)]
 
-smd["cast"] = smd["cast"].apply(literal_eval)
+# Use .loc to assign values directly:
+smd.loc[:, "cast"] = smd["cast"]
 smd.loc[:, "crew"] = smd["crew"].apply(literal_eval)
 smd.loc[:, "keywords"] = smd["keywords"].apply(literal_eval)
 smd.loc[:, "cast_size"] = smd["cast"].apply(lambda x: len(x))
-smd.loc[:, "crew_size"] = smd["crew"].apply(lambda x: len(x))
+smd.loc[:, "crew_size"] = smd["crew"].apply(len)
 
 
 def get_director(x):
@@ -175,7 +185,8 @@ def get_director(x):
     return np.nan
 
 
-smd.loc[:, "director"] = smd["crew"].apply(get_director)
+# Use .loc to assign values directly:
+smd.loc[:, "director"] = smd["crew"]
 smd.loc[:, "cast"] = smd["cast"].apply(
     lambda x: [i["name"] for i in x] if isinstance(x, list) else []
 )
@@ -220,7 +231,13 @@ smd.loc[:, "keywords"] = smd["keywords"].apply(
     lambda x: [str.lower(i.replace(" ", "")) for i in x]
 )
 
-smd.loc[:, "soup"] = smd["keywords"] + smd["cast"] + smd["director"] + smd["genres"]
+smd.loc[:, "soup"] = (
+    smd["keywords"].values
+    + smd["cast"].values
+    + smd["director"].values
+    + smd["genres"].values
+)
+
 smd.loc[:, "soup"] = smd["soup"].apply(lambda x: " ".join(x))
 
 # matrix represents the count or frequency of a token
@@ -329,6 +346,7 @@ def hybrid(title, userId=123):
         raise IndexError("Movie not found. Please enter a valid movie title.")
 
 
+app = Flask(__name__)
 # Replace with your TMDB API key
 TMDB_API_KEY = "e65f96397db5471ad7bab643b6f327ca"
 
