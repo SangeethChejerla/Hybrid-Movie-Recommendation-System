@@ -23,11 +23,22 @@ COPY kaggle.json /root/.kaggle/kaggle.json
 # Set permissions for the Kaggle API credentials file
 RUN chmod 600 /root/.kaggle/kaggle.json
 
-# Download the dataset using the Kaggle CLI
-RUN kaggle datasets download -d rounakbanik/the-movies-dataset -p /app/archive
 
-# Unzip the downloaded dataset
-RUN unzip /app/archive/the-movies-dataset.zip -d /app/archive/dataset
+Here are the modified paths for downloading, unzipping, and moving the CSV files as per your request:
+
+bash
+Copy code
+# Download the dataset using the Kaggle CLI and save it to the 'archive' directory
+RUN kaggle datasets download -d rounakbanik/the-movies-dataset -p app/archive
+
+# Unzip the downloaded dataset and move the required CSV files to the 'archive' directory
+RUN unzip app/archive/the-movies-dataset.zip -d app/archive \
+    && mv app/archive/credits.csv app/archive/ \
+    && mv app/archive/keywords.csv app/archive/ \
+    && mv app/archive/links_small.csv app/archive/ \
+    && mv app/archive/movies_metadata.csv app/archive/ \
+    && mv app/archive/ratings_small.csv app/archive/ \
+    && rm -rf app/archive/dataset
 
 # Optionally, remove the downloaded ZIP file
 RUN rm /app/archive/the-movies-dataset.zip
