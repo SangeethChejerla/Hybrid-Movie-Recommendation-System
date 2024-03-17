@@ -26,18 +26,15 @@ RUN chmod 600 /root/.kaggle/kaggle.json
 # Download the dataset using the Kaggle CLI and save it to the 'archive' directory
 RUN kaggle datasets download -d rounakbanik/the-movies-dataset -p app/archive
 
-
-# Unzip and move the dataset files
-RUN unzip -q your_dataset_name.zip -d app/archive && \
-    mv app/archive/credits.csv app/archive/credits_data.csv && \
-    mv app/archive/keywords.csv app/archive/keywords_data.csv && \
-    mv app/archive/links_small.csv app/archive/links_small_data.csv && \
-    mv app/archive/movies_metadata.csv app/archive/movies_metadata_data.csv && \
-    mv app/archive/ratings_small.csv app/archive/ratings_small_data.csv && \
-    rm your_dataset_name.zip
-
-# Optionally, remove the downloaded ZIP file
-RUN rm /app/archive/the-movies-dataset.zip
+# Unzip the downloaded dataset and move the required CSV files to the 'archive' directory
+RUN unzip app/archive/the-movies-dataset.zip -d app/archive \
+    && mv app/archive/credits.csv app/archive/ \
+    && mv app/archive/keywords.csv app/archive/ \
+    && mv app/archive/links_small.csv app/archive/ \
+    && mv app/archive/movies_metadata.csv app/archive/ \
+    && mv app/archive/ratings_small.csv app/archive/ \
+    && rm -rf app/archive/dataset \
+    && rm /app/archive/the-movies-dataset.zip
 
 # Copy the templates directory into the container at /app/templates
 COPY templates /app/templates
