@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Recommendation System</title>
+    <!-- Add Tailwind CSS via CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Add GSAP (GreenSock Animation Platform) CDN -->
+    <script src="https://unpkg.com/gsap@3.9.0/dist/gsap.min.js"></script>
+    <!-- Add Barba.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/barba.js@2.10.1/dist/barba.min.js"></script>
+</head>
+
+<body class="bg-black text-white min-h-screen flex flex-col items-center justify-center font-sans">
+
+    <div class="max-w-md bg-gray-800 p-8 rounded-lg shadow-md">
+        <h1 class="text-3xl font-bold text-center mb-4">Movie Recommendation System</h1>
+
+        <!-- Movie Input Form -->
+        <form id="movie-form" class="mb-4">
+            <label for="movie-input" class="block text-gray-300 text-sm font-bold mb-2">Enter a Movie:</label>
+            <input type="text" id="movie-input" name="movie" class="w-full px-4 py-2 border rounded-md bg-gray-700 text-white"
+                placeholder="e.g., Inception" required>
+            <button type="button" onclick="recommendMovies()"
+                class="mt-4 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 focus:outline-none focus:shadow-outline-red active:bg-red-800 transition-transform transform">
+                Get Recommendations
+            </button>
+        </form>
+
+        <!-- Loading State -->
+        <div id="loading-state" class="hidden text-center">
+            <p class="text-gray-300">Loading...</p>
+            <p>{{recommendations}}</p>
+        </div>
+
+        <!-- Recommended Movies Section -->
+        <div id="recommended-movies" class="hidden">
+            <h2 class="text-xl font-semibold mb-2">Recommended Movies</h2>
+            <div id="movie-results" class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Your ex<script>
+    const apiKey = 'e65f96397db5471ad7bab643b6f327ca';
+
+const fetchMovieDetails = async (movieId) => {
+    const apiUrl = `https://api.themoviedb.org/3/movie/${movieId}?api_key=${apiKey}&language=en-US`;
+
+    try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching movie details:', error);
+    }
+};
+
+const toggleLoadingState = (isLoading) => {
+    const loadingState = document.getElementById('loading-state');
+    const recommendedMovies = document.getElementById('recommended-movies');
+
+    if (isLoading) {
+        loadingState.classList.remove('hidden');
+        recommendedMovies.classList.add('hidden');
+    } else {
+        loadingState.classList.add('hidden');
+        recommendedMovies.classList.remove('hidden');
+    }
+};
+
+const recommendMovies = async () => {
+    const movieInput = document.getElementById('movie-input').value;
+
+    toggleLoadingState(true);
+
+    // Use TMDB search API to get movie recommendations
+    const searchUrl = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=en-US&query=${movieInput}&page=1&include_adult=false`;
+
+    try {
+        const response = await fetch(searchUrl);
+        const data = await response.json();
+
+        const movieResults = document.getElementById('movie-results');
+        movieResults.innerHTML = ''; // Clear previous results
+
+        data.results.slice(0, 6).forEach(async (result) => {
+            const movieDetails = await fetchMovieDetails(result.id);
+
+            const movieCard = document.createElement('div');
+            movieCard.className = 'bg-white p-4 rounded-md shadow-md overflow-hidden';
+            movieCard.innerHTML = `
+                <img src="https://image.tmdb.org/t/p/w500/${movieDetails.poster_path}" alt="Movie Poster" class="w-full h-48 object-cover mb-4 rounded-md">
+                <h3 class="text-lg font-semibold text-blue-500">${movieDetails.title}</h3>
+                <p class="text-gray-700 mb-4">${movieDetails.overview}</p>
+                <button class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:shadow-outline-blue active:bg-blue-800 transition-transform transform">
+                    Watch Now
+                </button>
+            `;
+
+            movieResults.appendChild(movieCard);
+        });
+
+        toggleLoadingState(false);
+    } catch (error) {
+        console.error('Error fetching movie recommendations:', error);
+        toggleLoadingState(false);
+    }
+};
+
+
+    </script>
+
+    <script>
+        // Additional styling for Netflix-like features
+        document.body.style.fontFamily = "Arial, sans-serif";
+        document.body.style.backgroundImage = "url('https://source.unsplash.com/collection/1118909/1920x1080')";
+        document.body.style.backgroundSize = "cover";
+        document.body.style.backgroundPosition = "center";
+        document.body.style.color = "#fff";
+    </script>
+
+  
+<script>
+    // Barba.js initialization
+    Barba.init({
+        transitions: [{
+            async leave(data) {
+                const page = gsap.timeline();
+                page.to(data.current.container, {
+                    opacity: 0,
+                    duration: 0.5,
+                });
+                await page;
+            },
+            enter(data) {
+                const page = gsap.timeline();
+                page.from(data.next.container, {
+                    opacity: 0,
+                    duration: 0.5,
+                });
+                return page;
+            },
+        }],
+    });
+
+    // Barba.js page transition
+    Barba.Pjax.start();
+</script>
+
+    <script>
+        // Additional Netflix-like styling for movie cards
+        const movieCards = document.querySelectorAll('.bg-white');
+        movieCards.forEach(card => {
+            card.classList.remove('bg-white');
+            card.classList.add('bg-gray-900', 'text-white', 'border', 'border-gray-700');
+        });
+    </script>
+
+</body>
+
+</html>

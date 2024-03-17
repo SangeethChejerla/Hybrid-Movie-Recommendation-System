@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Recommender</title>
+
+    <!-- Include Tailwind CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+
+    <div class="container mx-auto p-8">
+        <h1 class="text-3xl text-center font-bold mb-4">Movie Recommender</h1>
+
+        <form action="{{ url_for('recommend') }}" method="post" class="mb-8">
+            <label for="movie_title" class="block text-sm font-medium text-gray-600">Enter a movie title:</label>
+            <input type="text" name="movie_title" required class="mt-1 p-2 border rounded-md w-full">
+            <button type="submit" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded-md">Get Recommendations</button>
+        </form>
+
+        {% if movie_details %}
+            <div class="bg-white p-4 rounded-md shadow-md mb-4">
+                <h2 class="text-2xl font-bold">{{ movie_details.title }}</h2>
+                <img src="{{ movie_details.poster_path }}" alt="{{ movie_details.title }}" class="my-4 
+                rounded-md ">
+                <p class="text-gray-600">{{ movie_details.overview }}</p>
+            </div>
+        {% endif %}
+
+        {% if recommendations %}
+            <h2 class="text-2xl font-bold mb-4">Recommendations</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {% for recommendation in recommendations %}
+                    <div class="bg-white p-4 rounded-md shadow-md">
+                        <h3 class="text-lg font-bold">{{ recommendation.title }}</h3>
+                        <img src="{{ recommendation.poster_path }}" alt="{{ recommendation.title }}" class="my-4 rounded-md ">
+                        <p class="text-gray-600">{{ recommendation.overview }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-gray-600">No recommendations found.</p>
+        {% endif %}
+
+        {% if error_message %}
+            <p style="color: red;">{{ error_message }}</p>
+        {% endif %}
+    </div>
+
+</body>
+</html>
